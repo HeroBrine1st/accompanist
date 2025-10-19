@@ -15,10 +15,11 @@ dependencies {
 Usage:
 
 ```kotlin
-val state = rememberAutocompleteState<String> { it }
+// null as String? because overload resolution ambiguity, will be fixed later™
+val state = rememberAutocompleteState<String>(null as String?) { it }
 
 AutocompleteInputField(
     state,
-    currentSuggestions = { listOf("Abc", "Def").filter { it.lowercase().startswith(state.currentText) } }
+    currentSuggestions = { AutocompleteSearchResult.Ready(listOf("Abc", "Def").filter { it.lowercase().startswith(state.currentText) }, state.currentText) }
 )
 ```
