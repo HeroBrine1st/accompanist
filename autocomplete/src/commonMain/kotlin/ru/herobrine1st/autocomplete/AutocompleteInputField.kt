@@ -8,6 +8,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import ru.herobrine1st.autocomplete.resources.Res
+import ru.herobrine1st.autocomplete.resources.autocomplete_error_intermediate_state
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,6 +18,8 @@ public fun <T> AutocompleteInputField(
     state: AutocompleteState<T>,
     currentSuggestions: () -> AutocompleteSearchResult<T>,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    anchorType: ExposedDropdownMenuAnchorType? = ExposedDropdownMenuAnchorType.PrimaryEditable,
     suggestedItem: @Composable (item: T) -> Unit = { item ->
         DropdownMenuItem(
             text = { Text(state.transformToInputText(item)) },
@@ -23,14 +28,14 @@ public fun <T> AutocompleteInputField(
     },
     textField: @Composable (Modifier) -> Unit = {
         OutlinedTextField(
-            value = state.currentText,
+            value = state.currentTextValue,
             onValueChange = state::onValueChange,
-            trailingIcon = {
-                AutocompleteInputFieldDefaults.DefaultTrailingIcon(state, currentSuggestions)
-            }
+            trailingIcon = { AutocompleteInputFieldDefaults.DefaultTrailingIcon(state, currentSuggestions) },
+            isError = state.isLeftInIntermediateState,
+            supportingText = { if (state.isLeftInIntermediateState) Text(stringResource(Res.string.autocomplete_error_intermediate_state)) },
+            enabled = enabled
         )
     },
-    enabled: Boolean = true,
 ) {
     val autocompleteExpanded by remember(enabled) {
         derivedStateOf {
@@ -40,10 +45,10 @@ public fun <T> AutocompleteInputField(
 
     // hysteresis: the field is still considered left in intermediate state even after it is focused again
     // or users will be confused as error is removed on click
-    LaunchedEffect(state.isFocused, state.currentText, state.selectedItem) {
-        if (!state.isFocused && state.currentText.text.isNotBlank() && state.selectedItem == null) {
+    LaunchedEffect(state.isFocused, state.currentTextValue, state.selectedItem) {
+        if (!state.isFocused && state.currentTextValue.text.isNotBlank() && state.selectedItem == null) {
             state.isLeftInIntermediateState = true
-        } else if (state.currentText.text.isBlank() || state.selectedItem != null) {
+        } else if (state.currentTextValue.text.isBlank() || state.selectedItem != null) {
             state.isLeftInIntermediateState = false
         }
     }
@@ -55,7 +60,7 @@ public fun <T> AutocompleteInputField(
     ) {
         textField(
             Modifier
-                .menuAnchor(MenuAnchorType.PrimaryEditable)
+                .apply { anchorType?.let { menuAnchor(it) } }
                 .onFocusChanged {
                     state.isFocused = it.isFocused
                 }

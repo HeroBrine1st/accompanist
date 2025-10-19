@@ -1,3 +1,4 @@
 <resources>
     <string name="autocomplete_error_icon_content_description">An error occurred while searching for autocomplete suggestions</string>
+    <string name="autocomplete_error_intermediate_state">Left in intermediate state</string>
 </resources>

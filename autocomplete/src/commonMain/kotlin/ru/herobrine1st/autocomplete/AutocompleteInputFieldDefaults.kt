@@ -19,10 +19,10 @@ public object AutocompleteInputFieldDefaults {
         currentSuggestions: () -> AutocompleteSearchResult<*>,
     ) {
         if (state.selectedItem == null) when (val result = currentSuggestions()) {
-            is AutocompleteSearchResult.Ready -> if (result.query != state.currentText.text) {
+            is AutocompleteSearchResult.Ready -> if (result.query != state.currentTextValue.text) {
                 // 24.dp is size of icon
                 // strokeWidth is decreased in proportion (24/40 * 4)
-                CircularProgressIndicator(Modifier.Companion.size(24.dp), strokeWidth = 2.4.dp)
+                CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.4.dp)
             }
 
             is AutocompleteSearchResult.Error -> Icon(
@@ -38,7 +38,7 @@ public object AutocompleteInputFieldDefaults {
     public fun isExpanded(
         state: AutocompleteState<*>,
         currentSuggestions: () -> AutocompleteSearchResult<*>,
-        enabled: Boolean
+        enabled: Boolean,
     ): Boolean = state.allowDropDownExpand // master switch
             // if there's something to show, show it
             && (currentSuggestions() as? AutocompleteSearchResult.Ready)?.result?.isNotEmpty() == true

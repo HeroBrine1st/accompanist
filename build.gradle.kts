@@ -3,15 +3,23 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.jetbrainsCompose) apply false
     alias(libs.plugins.compose.compiler) apply false
-    alias(libs.plugins.vanniktech.mavenPublish)
+    alias(libs.plugins.vanniktech.mavenPublish) apply false
 }
 
 subprojects {
     group = "ru.herobrine1st.accompanist"
     version = "0.1.0"
+
     plugins.withId("com.vanniktech.maven.publish") {
-        mavenPublishing {
+        extensions.configure(com.vanniktech.maven.publish.MavenPublishBaseExtension::class) {
+            publishToMavenCentral()
+            signAllPublications()
+
             pom {
+                name = "Accompanist"
+                description = "A set of utility libraries for Jetpack Compose"
+                url = "https://github.com/HeroBrine1st/accompanist"
+
                 licenses {
                     license {
                         name = "GNU General Public License, Version 3"
@@ -29,16 +37,6 @@ subprojects {
                     connection = "scm:git:git://github.com/HeroBrine1st/accompanist.git"
                     developerConnection = "scm:git:ssh://github.com/HeroBrine1st/accompanist.git"
                     url = "http://github.com/HeroBrine1st/accompanist"
-                }
-            }
-        }
-        configure<PublishingExtension> {
-            publishing.repositories {
-                maven {
-                    name = "forgejo"
-                    url = uri("https://git.herobrine1st.ru/api/packages/HeroBrine1st/maven")
-
-                    credentials(PasswordCredentials::class)
                 }
             }
         }
