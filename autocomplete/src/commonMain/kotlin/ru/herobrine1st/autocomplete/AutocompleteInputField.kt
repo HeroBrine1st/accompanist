@@ -44,14 +44,15 @@ public fun <T> AutocompleteInputField(
             onClick = { state.selectItem(item) }
         )
     },
-    textField: @Composable (Modifier) -> Unit = {
+    textField: @Composable ExposedDropdownMenuBoxScope.(Modifier) -> Unit = {
         OutlinedTextField(
             value = state.currentTextValue,
             onValueChange = state::onValueChange,
+            modifier = it,
             trailingIcon = { AutocompleteInputFieldDefaults.DefaultTrailingIcon(state, currentSuggestions) },
             isError = state.isLeftInIntermediateState,
             supportingText = { if (state.isLeftInIntermediateState) Text(stringResource(Res.string.autocomplete_error_intermediate_state)) },
-            enabled = enabled
+            enabled = enabled,
         )
     },
 ) {
@@ -78,7 +79,7 @@ public fun <T> AutocompleteInputField(
     ) {
         textField(
             Modifier
-                .apply { anchorType?.let { menuAnchor(it) } }
+                .run { anchorType?.let { menuAnchor(it) } ?: this }
                 .onFocusChanged {
                     state.isFocused = it.isFocused
                 }
