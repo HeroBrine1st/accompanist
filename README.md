@@ -8,7 +8,7 @@ This is an opinionated collection of my own libraries related to Compose UI that
 
 ```kotlin
 dependencies {
-    implementation("ru.herobrine1st.accompanist:autocomplete:0.1.1")
+    implementation("ru.herobrine1st.accompanist:autocomplete:0.1.2")
 }
 ```
 
