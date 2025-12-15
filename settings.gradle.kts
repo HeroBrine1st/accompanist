@@ -16,3 +16,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "accompanist"
 include(":autocomplete")
+include(":sample")
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
