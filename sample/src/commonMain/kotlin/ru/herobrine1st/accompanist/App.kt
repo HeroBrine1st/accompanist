@@ -24,7 +24,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import ru.herobrine1st.autocomplete.AutocompleteInputField
 import ru.herobrine1st.autocomplete.AutocompleteSearchResult
@@ -35,12 +34,11 @@ import ru.herobrine1st.autocomplete.rememberAutocompleteState
 fun App() {
     Scaffold { paddingValues ->
         Column(Modifier.padding(paddingValues).padding(4.dp)) {
-            // null as String? because overload resolution ambiguity, will be fixed later™
-            val state = rememberAutocompleteState<String>(null as String?) { AnnotatedString(it) }
+            val state = rememberAutocompleteState<String> { it }
 
             AutocompleteInputField(
                 state,
-                currentSuggestions = {
+                suggestions = {
                     AutocompleteSearchResult.Ready(listOf("Abc", "Def").filter {
                         it.lowercase().startsWith(state.currentText.lowercase())
                     }, state.currentText)

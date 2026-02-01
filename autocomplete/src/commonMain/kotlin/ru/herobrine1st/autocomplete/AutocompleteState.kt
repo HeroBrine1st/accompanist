@@ -22,28 +22,38 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import kotlin.experimental.ExperimentalTypeInference
 
 /**
  * @see AutocompleteState
  */
+
 @Composable
-public fun <T> rememberAutocompleteState(
+@OptIn(ExperimentalTypeInference::class)
+@OverloadResolutionByLambdaReturnType
+public inline fun <T> rememberAutocompleteState(
+    initialItem: T? = null,
     initialText: String? = null,
-    initialItem: T? = null,
-    transformToInputText: (T) -> AnnotatedString,
-): AutocompleteState<T> =
-    remember { AutocompleteState(initialItem, initialText?.let { AnnotatedString("") }, transformToInputText) }
+    crossinline transformToInputText: (T) -> String,
+): AutocompleteState<T> = remember {
+    AutocompleteState(initialItem, initialText?.let { AnnotatedString(it) }) {
+        AnnotatedString(transformToInputText(it))
+    }
+}
 
 /**
  * @see AutocompleteState
  */
 @Composable
+@OptIn(ExperimentalTypeInference::class)
+@OverloadResolutionByLambdaReturnType
 public fun <T> rememberAutocompleteState(
-    initialText: AnnotatedString? = null,
     initialItem: T? = null,
+    initialText: AnnotatedString? = null,
     transformToInputText: (T) -> AnnotatedString,
-): AutocompleteState<T> =
-    remember { AutocompleteState(initialItem, initialText, transformToInputText) }
+): AutocompleteState<T> = remember {
+    AutocompleteState(initialItem, initialText, transformToInputText)
+}
 
 /**
  * A state holder for [AutocompleteInputField].
@@ -61,9 +71,14 @@ public class AutocompleteState<T>(
 ) {
     @set:DelicateAutocompleteAPI
     public var currentTextValue: TextFieldValue by mutableStateOf(
-        TextFieldValue(
-            initialText ?: if (initialItem != null) transformToInputText(initialItem) else AnnotatedString("")
-        )
+        run {
+            val text =
+                initialText ?: if (initialItem != null) transformToInputText(initialItem) else AnnotatedString("")
+            TextFieldValue(
+                text,
+                selection = TextRange(text.length)
+            )
+        }
     )
     public inline val currentText: String get() = currentTextValue.text
     public var selectedItem: T? by mutableStateOf(initialItem)

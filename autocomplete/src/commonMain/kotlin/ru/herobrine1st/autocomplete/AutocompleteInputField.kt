@@ -34,7 +34,7 @@ import ru.herobrine1st.autocomplete.resources.autocomplete_error_intermediate_st
 @Composable
 public fun <T> AutocompleteInputField(
     state: AutocompleteState<T>,
-    currentSuggestions: () -> AutocompleteSearchResult<T>,
+    suggestions: () -> AutocompleteSearchResult<T>,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     anchorType: ExposedDropdownMenuAnchorType? = ExposedDropdownMenuAnchorType.PrimaryEditable,
@@ -49,7 +49,7 @@ public fun <T> AutocompleteInputField(
             value = state.currentTextValue,
             onValueChange = state::onValueChange,
             modifier = it,
-            trailingIcon = { AutocompleteInputFieldDefaults.DefaultTrailingIcon(state, currentSuggestions) },
+            trailingIcon = { AutocompleteInputFieldDefaults.DefaultTrailingIcon(state, enabled, true, suggestions) },
             isError = state.isLeftInIntermediateState,
             supportingText = { if (state.isLeftInIntermediateState) Text(stringResource(Res.string.autocomplete_error_intermediate_state)) },
             enabled = enabled,
@@ -58,7 +58,7 @@ public fun <T> AutocompleteInputField(
 ) {
     val autocompleteExpanded by remember(enabled) {
         derivedStateOf {
-            AutocompleteInputFieldDefaults.isExpanded(state, currentSuggestions, enabled)
+            AutocompleteInputFieldDefaults.isExpanded(state, enabled, suggestions)
         }
     }
 
@@ -90,7 +90,7 @@ public fun <T> AutocompleteInputField(
             modifier = Modifier
                 .heightIn(max = (48 * 3).dp)
         ) {
-            (currentSuggestions() as? AutocompleteSearchResult.Ready)?.result?.forEach {
+            (suggestions() as? AutocompleteSearchResult.Ready)?.suggestions?.forEach {
                 suggestedItem(it)
             }
         }
