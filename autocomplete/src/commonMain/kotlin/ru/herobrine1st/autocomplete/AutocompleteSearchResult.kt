@@ -18,6 +18,8 @@
 
 package ru.herobrine1st.autocomplete
 
+import kotlin.jvm.JvmName
+
 public sealed interface AutocompleteSearchResult<out T> {
     /**
      * A holder for a query and results for it.
@@ -52,12 +54,24 @@ public sealed interface AutocompleteSearchResult<out T> {
      * @param suggestions list of suggested selections for user to choose from
      * @param query exactly the [value of text field][AutocompleteState.currentText] when suggestion search is started, or null to mark as available *soon*.
      */
-    public data class Ready<T> @DelicateAutocompleteAPI constructor(
+
+    @ConsistentCopyVisibility
+    public data class Ready<T> internal constructor(
         val suggestions: List<T>,
         val query: String?,
     ) : AutocompleteSearchResult<T> {
-        @OptIn(DelicateAutocompleteAPI::class)
-        public constructor(suggestions: List<T>, query: String): this(suggestions, query as String?)
+        public companion object {
+            @DelicateAutocompleteAPI
+            public operator fun <T> invoke(suggestions: List<T>, query: String?): Ready<T> = Ready(suggestions, query)
+
+            @JvmName("invokeNonNull")
+            public operator fun <T> invoke(suggestions: List<T>, query: String): Ready<T> = Ready(suggestions, query)
+        }
+
+        // no need to copy while changing query, right?
+        // right?
+        // it is the only way to avoid conflict with generated "copy" method because phase 1 breaks it while phase 3 (seemingly) repairs it
+        public fun copy(suggestions: List<T>): Ready<T> = Ready(suggestions, query)
     }
 
     /**
@@ -67,7 +81,7 @@ public sealed interface AutocompleteSearchResult<out T> {
 
     public companion object {
         /**
-         * Default value: empty query usually means no suggestions. If doesn't fit (e.g. there could be suggestions for empty
+         * Default value: empty query usually means no suggestions. If this doesn't fit (e.g. there could be suggestions for empty
          * query), use `Ready(emptyList(), null)`
          */
         public val Empty: Ready<Nothing> = Ready(emptyList(), "")
