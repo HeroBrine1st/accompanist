@@ -23,11 +23,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import ru.herobrine1st.autocomplete.AutocompleteInputField
 import ru.herobrine1st.autocomplete.AutocompleteSearchResult
 import ru.herobrine1st.autocomplete.rememberAutocompleteState
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,14 +43,20 @@ fun App() {
     Scaffold { paddingValues ->
         Column(Modifier.padding(paddingValues).padding(4.dp)) {
             val state = rememberAutocompleteState<String> { it }
+            val suggestiongsFlow = remember {
+                // snapshotFlow is conflated by default, avoiding in-flight cancellation and request accumulation
+                snapshotFlow { state.currentText }
+                    .onEach { delay(250.milliseconds) }
+                    .map { currentText ->
+                        AutocompleteSearchResult.Ready(listOf("Abc", "Def").filter {
+                            it.lowercase().startsWith(state.currentText.lowercase())
+                        }, currentText)
+                    }
+            }.collectAsState(AutocompleteSearchResult.Empty)
 
             AutocompleteInputField(
                 state,
-                suggestions = {
-                    AutocompleteSearchResult.Ready(listOf("Abc", "Def").filter {
-                        it.lowercase().startsWith(state.currentText.lowercase())
-                    }, state.currentText)
-                }
+                suggestions = { suggestiongsFlow.value }
             )
         }
     }
