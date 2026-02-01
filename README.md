@@ -8,18 +8,10 @@ This is an opinionated collection of my own libraries related to Compose UI that
 
 ```kotlin
 dependencies {
-    implementation("ru.herobrine1st.accompanist:autocomplete:0.1.2")
+    implementation("ru.herobrine1st.accompanist:autocomplete:0.1.3")
 }
 ```
 
 Usage:
 
-```kotlin
-// null as String? because overload resolution ambiguity, will be fixed later™
-val state = rememberAutocompleteState<String>(null as String?) { it }
-
-AutocompleteInputField(
-    state,
-    currentSuggestions = { AutocompleteSearchResult.Ready(listOf("Abc", "Def").filter { it.lowercase().startswith(state.currentText) }, state.currentText) }
-)
-```
+https://github.com/HeroBrine1st/accompanist/blob/bd0d267015dc8f52920cad75c3c03b6a9a5a66cf/sample/src/commonMain/kotlin/ru/herobrine1st/accompanist/App.kt#L45-L60
