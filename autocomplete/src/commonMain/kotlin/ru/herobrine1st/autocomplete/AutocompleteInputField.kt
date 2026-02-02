@@ -30,6 +30,21 @@ import org.jetbrains.compose.resources.stringResource
 import ru.herobrine1st.autocomplete.resources.Res
 import ru.herobrine1st.autocomplete.resources.autocomplete_error_intermediate_state
 
+/**
+ * [AutocompleteInputField] is a field capable of providing responsive suggestions as user types the text.
+ *
+ * There is an alternate variant supporting different types for selected and suggested items.
+ *
+ * @param T type of selected item and shown suggestion, the same as in [state].
+ *
+ * @param state linked [AutocompleteState] that is used to get current text for [suggestions].
+ * @param suggestions a getter for current state of suggestion search, should react to changes in [currentTextValue][AutocompleteState.currentTextValue] or [currentText][AutocompleteState.currentText].
+ * @param modifier Modifier
+ * @param enabled true if enabled, set false to disable dropdown [ExposedDropdownMenuBox] interactions. Note that [textField] does not get this parameter, though default value uses it directly.,
+ * @param anchorType passed through to menuAnchor modifier, which in turn is passed to [textField]. Set null to disable.
+ * @param suggestedItem usually a [DropdownMenuItem] showing [suggested item][T] from [search results][suggestions].
+ * @param textField a widget that must use provided modifier directly on text field. Must also bind [AutocompleteState.currentTextValue] and [AutocompleteState.onValueChange] as a required minimum.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 public fun <T> AutocompleteInputField(
@@ -42,6 +57,60 @@ public fun <T> AutocompleteInputField(
         DropdownMenuItem(
             text = { Text(state.transformToInputText(item)) },
             onClick = { state.selectItem(item) }
+        )
+    },
+    textField: @Composable ExposedDropdownMenuBoxScope.(Modifier) -> Unit = {
+        OutlinedTextField(
+            value = state.currentTextValue,
+            onValueChange = state::onValueChange,
+            modifier = it,
+            trailingIcon = { AutocompleteInputFieldDefaults.DefaultTrailingIcon(state, enabled, true, suggestions) },
+            isError = state.isLeftInIntermediateState,
+            supportingText = { if (state.isLeftInIntermediateState) Text(stringResource(Res.string.autocomplete_error_intermediate_state)) },
+            enabled = enabled,
+        )
+    },
+): Unit = AutocompleteInputField(
+    state = state,
+    suggestions = suggestions,
+    transformToSelectedItem = @Suppress("UNCHECKED_CAST") (Identity as (T) -> T),
+    modifier = modifier,
+    enabled = enabled,
+    anchorType = anchorType,
+    suggestedItem = suggestedItem,
+    textField = textField
+)
+
+/**
+ * [AutocompleteInputField] is a field capable of providing responsive suggestions as user types the text.
+ *
+ * There is an alternate variant without [transformToSelectedItem] parameter for cases when [T] is the same as [R].
+ *
+ * @param T type of selected item, the same as in [state].
+ * @param R type of proposed item, usually the same as [T], but it is possible to provide rich suggestions and then [transform item to state type][transformToSelectedItem].
+ *
+ * @param state linked [AutocompleteState] that is used to get current text for [suggestions].
+ * @param suggestions a getter for current state of suggestion search, should react to changes in [currentTextValue][AutocompleteState.currentTextValue] or [currentText][AutocompleteState.currentText].
+ * @param transformToSelectedItem a transformer of suggestion item shown by [suggestedItem] to a selected item used by [state].
+ * @param modifier Modifier
+ * @param enabled true if enabled, set false to disable dropdown [ExposedDropdownMenuBox] interactions. Note that [textField] does not get this parameter, though default value uses it directly.,
+ * @param anchorType passed through to menuAnchor modifier, which in turn is passed to [textField]. Set null to disable.
+ * @param suggestedItem usually a [DropdownMenuItem] showing [suggested item][R] from [search results][suggestions].
+ * @param textField a widget that must use provided modifier directly on text field. Must also bind [AutocompleteState.currentTextValue] and [AutocompleteState.onValueChange] as a required minimum.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+public fun <T, R> AutocompleteInputField(
+    state: AutocompleteState<T>,
+    suggestions: () -> AutocompleteSearchResult<R>,
+    transformToSelectedItem: (R) -> T,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    anchorType: ExposedDropdownMenuAnchorType? = ExposedDropdownMenuAnchorType.PrimaryEditable,
+    suggestedItem: @Composable (item: R) -> Unit = { item ->
+        DropdownMenuItem(
+            text = { Text(state.transformToInputText(transformToSelectedItem(item))) },
+            onClick = { state.selectItem(transformToSelectedItem(item)) }
         )
     },
     textField: @Composable ExposedDropdownMenuBoxScope.(Modifier) -> Unit = {
@@ -96,3 +165,5 @@ public fun <T> AutocompleteInputField(
         }
     }
 }
+
+private val Identity: (Any) -> Any = { it }
