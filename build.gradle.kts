@@ -9,7 +9,7 @@ plugins {
 
 subprojects {
     group = "ru.herobrine1st.accompanist"
-    version = "0.1.4"
+    version = "0.1.5"
 
     plugins.withId("com.vanniktech.maven.publish") {
         extensions.configure(com.vanniktech.maven.publish.MavenPublishBaseExtension::class) {
